@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+
 /**
  * This is a basic class, implementing the interaction with Camera and OpenCV library.
  * The main responsibility of it - is to control when camera can be enabled, process the frame,
@@ -376,7 +377,9 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
     private void onEnterStartedState() {
         Log.d(TAG, "call onEnterStartedState");
         /* Connect camera */
-        if (!connectCamera(getWidth(), getHeight())) {
+        // TODO
+        // 修改了源码  if (!connectCamera(getWidth(), getHeight()))
+        if (!connectCamera(getWidth(), getHeight())){
             AlertDialog ad = new AlertDialog.Builder(getContext()).create();
             ad.setCancelable(false); // This blocks the 'BACK' button
             ad.setMessage("It seems that your device does not support camera (or it is locked). Application will be closed.");
@@ -462,33 +465,54 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
                 }
             }
 
-            if (bmpValid && mCacheBitmap != null) {
-                Canvas canvas = getHolder().lockCanvas();
-                if (canvas != null) {
-                    canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-                    if (BuildConfig.DEBUG) {
-                        Log.d(TAG, "mStretch value: " + mScale);
-                    }
+//            if (bmpValid && mCacheBitmap != null) {
+//                Canvas canvas = getHolder().lockCanvas();
+//                if (canvas != null) {
+//                    canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
+//                    if (BuildConfig.DEBUG) {
+//                        Log.d(TAG, "mStretch value: " + mScale);
+//                    }
+//
+//                    //TODO 额外添加，让预览框达到全屏效果
+//                    int degrees = rotationToDegree();
+//                    Matrix matrix = new Matrix();
+//                    matrix.postRotate(degrees);
+//                    Bitmap outputBitmap = Bitmap.createBitmap(mCacheBitmap, 0, 0, mCacheBitmap.getWidth(), mCacheBitmap.getHeight(), matrix, true);
+//
+//                    if (outputBitmap.getWidth() <= canvas.getWidth()) {
+//                        mScale = calcScale(outputBitmap.getWidth(), outputBitmap.getHeight(), canvas.getWidth(), canvas.getHeight());
+//                    } else {
+//                        mScale = calcScale(canvas.getWidth(), canvas.getHeight(), outputBitmap.getWidth(), outputBitmap.getHeight());
+//                    }
+//
+//                    if (mScale != 0) {
+//                        canvas.scale(mScale, mScale, 0, 0);
+//                    }
+//                    Log.d(TAG, "mStretch value: " + mScale);
+//
+//                    canvas.drawBitmap(outputBitmap, 0, 0, null);
 
-                    //TODO 额外添加，让预览框达到全屏效果
-                    int degrees = rotationToDegree();
-                    Matrix matrix = new Matrix();
-                    matrix.postRotate(degrees);
-                    Bitmap outputBitmap = Bitmap.createBitmap(mCacheBitmap, 0, 0, mCacheBitmap.getWidth(), mCacheBitmap.getHeight(), matrix, true);
+        // 替代？？不知有没改进？？？
+        // TODO: fix bug 旋转角度
+        if (bmpValid && mCacheBitmap != null) {
+            Canvas canvas = getHolder().lockCanvas();
+            if (canvas != null) {
+                canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
 
-                    if (outputBitmap.getWidth() <= canvas.getWidth()) {
-                        mScale = calcScale(outputBitmap.getWidth(), outputBitmap.getHeight(), canvas.getWidth(), canvas.getHeight());
-                    } else {
-                        mScale = calcScale(canvas.getWidth(), canvas.getHeight(), outputBitmap.getWidth(), outputBitmap.getHeight());
-                    }
+                int degrees = rotationToDegree();
+                Matrix matrix = new Matrix();
+                matrix.postRotate(degrees);
 
-                    if (mScale != 0) {
-                        canvas.scale(mScale, mScale, 0, 0);
-                    }
-                    Log.d(TAG, "mStretch value: " + mScale);
+                // 计算缩放比例，使图像填满整个画布
+                float scaleX = (float) canvas.getWidth() / mCacheBitmap.getWidth();
+                float scaleY = (float) canvas.getHeight() / mCacheBitmap.getHeight();
+                float scale = Math.max(scaleX, scaleY);
 
-                    canvas.drawBitmap(outputBitmap, 0, 0, null);
+                // 缩放绘制图像
+                matrix.postScale(scale, scale);
+                Bitmap outputBitmap = Bitmap.createBitmap(mCacheBitmap, 0, 0, mCacheBitmap.getWidth(), mCacheBitmap.getHeight(), matrix, true);
 
+                canvas.drawBitmap(outputBitmap, 0, 0, null);
              /*
              if (mScale != 0) {
                  canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),

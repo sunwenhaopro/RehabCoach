@@ -1,44 +1,52 @@
 package com.example.myapplication;
 
-
 import android.os.Bundle;
-
 import android.util.Log;
 import android.widget.Button;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Bundle;
+import android.widget.LinearLayout;
+import android.widget.MediaController;
+import android.widget.VideoView;
 
 import com.blankj.utilcode.util.PathUtils;
 import com.blankj.utilcode.util.ResourceUtils;
-import mmdeploy.Context;
-import mmdeploy.Device;
-import mmdeploy.Model;
-import mmdeploy.PoseTracker;
+import mmdeploy.*;
+
 import org.opencv.android.*;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.videoio.VideoCapture;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CamActivity extends CameraActivity {
+
+    private static final String TAG = "OpencvCam";
+
     static {
         System.loadLibrary("opencv_java4");
     }
 
-    private static final String TAG = "OpencvCam";
-    public VideoCapture videoCapture;
-    private PoseTracker poseTracker;
-    private JavaCamera2View javaCameraView;
-    private Button switchCameraBtn;
-    public long stateHandle;
-    private int cameraId = JavaCamera2View.CAMERA_ID_ANY;
+    private PoseTracker poseTracker;    // 姿势追踪器对象
+    private JavaCamera2View javaCameraView;  // 相机视图对象
+    private Button switchCameraBtn;     // 切换相机按钮
+    private Button backBtn;             // 返回按钮
+    public long stateHandle;            // 状态句柄
+    private int cameraId = JavaCamera2View.CAMERA_ID_ANY;  // 相机ID
+    private VideoView videoView;        // 视频视图
+    private MediaController mediaController;  // 媒体控制器
+    public static int newWidth = 640;          // 新的宽度
+    public static int newHeight = 520;         // 新的高度
 
     private CameraBridgeViewBase.CvCameraViewListener2 cvCameraViewListener2 = new CameraBridgeViewBase.CvCameraViewListener2() {
         @Override
         public void onCameraViewStarted(int width, int height) {
             try {
-                stateHandle = initMMDeploy();
+                stateHandle = initMMDeploy();  // 初始化MMDeploy
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -52,17 +60,21 @@ public class CamActivity extends CameraActivity {
 
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-                org.opencv.core.Mat frame =inputFrame.rgba();
-                org.opencv.core.Mat cvMat = new org.opencv.core.Mat();
-                Imgproc.cvtColor(frame, cvMat, Imgproc.COLOR_RGB2BGR);
-                mmdeploy.Mat mat = Utils.cvMatToMat(cvMat);
-                PoseTracker.Result[] results = new PoseTracker.Result[0];
-                try {
-                    results = poseTracker.apply(stateHandle, mat, -1);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            return Draw.drawPoseTrackerResult(frame, results);
+            Mat frame = inputFrame.rgba();  // 获取RGBA帧
+            Imgproc.resize(frame, frame, new org.opencv.core.Size(newWidth, newHeight));  // 调整帧大小
+            if (cameraId == JavaCamera2View.CAMERA_ID_FRONT) {
+                Core.flip(frame, frame, 0);  // 翻转帧，前置摄像头镜像显示
+            }
+            org.opencv.core.Mat cvMat = new org.opencv.core.Mat();
+            Imgproc.cvtColor(frame, cvMat, Imgproc.COLOR_RGB2BGR);  // 转换颜色空间
+            mmdeploy.Mat mat = Utils.cvMatToMat(cvMat);  // 将OpenCV的Mat转换为MMDeploy的Mat
+            PoseTracker.Result[] results = new PoseTracker.Result[0];
+            try {
+                results = poseTracker.apply(stateHandle, mat, -1);  // 应用姿势追踪器
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return Draw.drawPoseTrackerResult(frame, results, newWidth);  // 在帧上绘制姿势追踪结果
         }
     };
 
@@ -70,26 +82,18 @@ public class CamActivity extends CameraActivity {
         @Override
         public void onManagerConnected(int status) {
             Log.i(TAG, "onManagerConnected status=" + status + ", javaCameraView=" + javaCameraView);
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    if (javaCameraView != null) {
-                        javaCameraView.setCvCameraViewListener(cvCameraViewListener2);
-                        // 禁用帧率显示
-                        javaCameraView.enableFpsMeter();
-                        javaCameraView.enableView();
-                    }
-                }
-                break;
-                default:
-                    super.onManagerConnected(status);
-                    break;
+            if (status == LoaderCallbackInterface.SUCCESS && javaCameraView != null) {
+                javaCameraView.setCvCameraViewListener(cvCameraViewListener2);
+                javaCameraView.enableFpsMeter();
+                javaCameraView.enableView();  // 启用相机视图
+            } else {
+                super.onManagerConnected(status);
             }
         }
     };
 
     @Override
     protected List<? extends CameraBridgeViewBase> getCameraViewList() {
-        Log.i(TAG, "getCameraViewList");
         List<CameraBridgeViewBase> list = new ArrayList<>();
         list.add(javaCameraView);
         return list;
@@ -98,9 +102,16 @@ public class CamActivity extends CameraActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera);
-        findView();
-        setListener();
+        setContentView(R.layout.activity_camera);  // 设置布局
+        findView();  // 查找视图
+        videoSet();  // 设置视频
+        setListener();  // 设置监听器
+    }
+
+    public void videoSet() {
+        String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.test;
+        videoView.setVideoURI(Uri.parse(videoPath));  // 设置视频URI
+        videoView.setOnPreparedListener(mediaPlayer -> videoView.start());  // 准备好后开始播放视频
     }
 
     public long initPoseTracker(String workDir) throws Exception {
@@ -108,48 +119,49 @@ public class CamActivity extends CameraActivity {
         String poseModelPath = workDir + "/rtmpose-tiny-ncnn-fp16";
         String deviceName = "cpu";
         int deviceID = 0;
-        Model detModel = new Model(detModelPath);
-        Model poseModel = new Model(poseModelPath);
-        Device device = new Device(deviceName, deviceID);
-        Context context = new Context();
+        Model detModel = new Model(detModelPath);  // 创建检测模型
+        Model poseModel = new Model(poseModelPath);  // 创建姿势模型
+        Device device = new Device(deviceName, deviceID);  // 创建设备
+        Context context = new Context();  // 创建上下文
         context.add(device);
-        poseTracker = new mmdeploy.PoseTracker(detModel, poseModel, context);
-        mmdeploy.PoseTracker.Params params = poseTracker.initParams();
+        poseTracker = new mmdeploy.PoseTracker(detModel, poseModel, context);  // 创建姿势追踪器
+        mmdeploy.PoseTracker.Params params = poseTracker.initParams();  // 初始化姿势追踪器参数
         params.detInterval = 5;
         params.poseMaxNumBboxes = 6;
-        long stateHandle = poseTracker.createState(params);
+        long stateHandle = poseTracker.createState(params);  // 创建姿势追踪状态
         return stateHandle;
     }
 
     public long initMMDeploy() throws Exception {
-        String workDir = PathUtils.getExternalAppFilesPath() + File.separator
-                + "file";
-        if (ResourceUtils.copyFileFromAssets("models", workDir)) {
-            return initPoseTracker(workDir);
+        String workDir = PathUtils.getExternalAppFilesPath() + File.separator + "file";
+        if (ResourceUtils.copyFileFromAssets("models", workDir)) {  // 从资产复制文件
+            return initPoseTracker(workDir);  // 初始化姿势追踪器
         }
         return -1;
     }
 
     private void findView() {
-        javaCameraView = findViewById(R.id.javaCameraView);
-        switchCameraBtn = findViewById(R.id.switchCameraBtn);
+        javaCameraView = findViewById(R.id.javaCameraView);  // 查找相机视图
+        switchCameraBtn = findViewById(R.id.switchCameraBtn);  // 查找切换相机按钮
+        backBtn = findViewById(R.id.backBtn);  // 查找返回按钮
+        videoView = findViewById(R.id.videoView);  // 查找视频视图
+        mediaController = new MediaController(this);  // 创建媒体控制器
+        videoView.setMediaController(mediaController);  // 设置媒体控制器
     }
 
     private void setListener() {
         switchCameraBtn.setOnClickListener(view -> {
-            switch (cameraId) {
-                case JavaCamera2View.CAMERA_ID_ANY:
-                case JavaCamera2View.CAMERA_ID_BACK:
-                    cameraId = JavaCamera2View.CAMERA_ID_FRONT;
-                    break;
-                case JavaCamera2View.CAMERA_ID_FRONT:
-                    cameraId = JavaCamera2View.CAMERA_ID_BACK;
-                    break;
-            }
+            cameraId = (cameraId == JavaCamera2View.CAMERA_ID_FRONT) ?
+                    JavaCamera2View.CAMERA_ID_BACK : JavaCamera2View.CAMERA_ID_FRONT;  // 切换相机
             Log.i(TAG, "cameraId : " + cameraId);
             javaCameraView.disableView();
             javaCameraView.setCameraIndex(cameraId);
-            javaCameraView.enableView();
+            javaCameraView.enableView();  // 启用相机视图
+        });
+
+        backBtn.setOnClickListener(view -> {
+            onPause();
+            onBackPressed();  // 暂停并返回
         });
     }
 
@@ -158,7 +170,7 @@ public class CamActivity extends CameraActivity {
         Log.i(TAG, "onPause");
         super.onPause();
         if (javaCameraView != null) {
-            javaCameraView.disableView();
+            javaCameraView.disableView();  // 暂停相机视图
         }
     }
 
@@ -174,5 +186,5 @@ public class CamActivity extends CameraActivity {
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, baseLoaderCallback);
         }
     }
-
 }
+

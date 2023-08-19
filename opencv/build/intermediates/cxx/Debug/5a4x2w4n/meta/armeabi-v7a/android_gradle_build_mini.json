@@ -1,0 +1,27 @@
+{
+  "buildFiles": [
+    "C:\\Users\\ZHB\\Desktop\\RehabCoach\\opencv\\libcxx_helper\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "D:\\AndroidSDk\\cmake\\3.18.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\ZHB\\Desktop\\RehabCoach\\opencv\\.cxx\\Debug\\5a4x2w4n\\armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "D:\\AndroidSDk\\cmake\\3.18.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\ZHB\\Desktop\\RehabCoach\\opencv\\.cxx\\Debug\\5a4x2w4n\\armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "opencv_jni_shared::@6890427a1f51a3e7e1df": {
+      "artifactName": "opencv_jni_shared",
+      "abi": "armeabi-v7a",
+      "output": "C:\\Users\\ZHB\\Desktop\\RehabCoach\\opencv\\.cxx\\Debug\\5a4x2w4n\\armeabi-v7a\\libopencv_jni_shared.a",
+      "runtimeFiles": []
+    }
+  }
+}
