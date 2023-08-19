@@ -4,8 +4,8 @@
 4
 5    <uses-sdk
 6        android:minSdkVersion="21"
-6-->E:\RehabCoach\opencv\java\AndroidManifest.xml
+6-->D:\RehabCoach\opencv\java\AndroidManifest.xml
 7        android:targetSdkVersion="32" />
-7-->E:\RehabCoach\opencv\java\AndroidManifest.xml
+7-->D:\RehabCoach\opencv\java\AndroidManifest.xml
 8
 9</manifest>

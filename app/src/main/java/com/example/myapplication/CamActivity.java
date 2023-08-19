@@ -5,8 +5,6 @@ import android.util.Log;
 import android.widget.Button;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Bundle;
-import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
@@ -39,8 +37,12 @@ public class CamActivity extends CameraActivity {
     private int cameraId = JavaCamera2View.CAMERA_ID_ANY;  // 相机ID
     private VideoView videoView;        // 视频视图
     private MediaController mediaController;  // 媒体控制器
-    public static int newWidth = 640;          // 新的宽度
-    public static int newHeight = 520;         // 新的高度
+    public static int newWidth = 500;          // 新的宽度
+    public static int newHeight = 375;         // 新的高度
+    private int frameSkipCounter = 0;
+    private final int FRAME_SKIP_INTERVAL = 2; // 隔n帧处理一次
+    private ArrayList<Mat> drawFrame = new ArrayList<>();  // 存储处理后的帧
+    private int counter = -1;
 
     private CameraBridgeViewBase.CvCameraViewListener2 cvCameraViewListener2 = new CameraBridgeViewBase.CvCameraViewListener2() {
         @Override
@@ -58,23 +60,46 @@ public class CamActivity extends CameraActivity {
             Log.i(TAG, "onCameraViewStopped");
         }
 
-        @Override
-        public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-            Mat frame = inputFrame.rgba();  // 获取RGBA帧
+        public Mat prepareFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+            Mat frame = inputFrame.rgba();
             Imgproc.resize(frame, frame, new org.opencv.core.Size(newWidth, newHeight));  // 调整帧大小
+            Core.rotate(frame, frame, Core.ROTATE_90_CLOCKWISE); // 顺时针旋转90度
             if (cameraId == JavaCamera2View.CAMERA_ID_FRONT) {
                 Core.flip(frame, frame, 0);  // 翻转帧，前置摄像头镜像显示
             }
-            org.opencv.core.Mat cvMat = new org.opencv.core.Mat();
-            Imgproc.cvtColor(frame, cvMat, Imgproc.COLOR_RGB2BGR);  // 转换颜色空间
-            mmdeploy.Mat mat = Utils.cvMatToMat(cvMat);  // 将OpenCV的Mat转换为MMDeploy的Mat
-            PoseTracker.Result[] results = new PoseTracker.Result[0];
-            try {
-                results = poseTracker.apply(stateHandle, mat, -1);  // 应用姿势追踪器
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            return frame;
+        }
+
+        // TODO
+        @Override
+        public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+            if(counter >= 100000){
+                drawFrame.clear();
+                counter = -1;
             }
-            return Draw.drawPoseTrackerResult(frame, results, newWidth);  // 在帧上绘制姿势追踪结果
+            if (frameSkipCounter < FRAME_SKIP_INTERVAL && counter != -1) {
+                frameSkipCounter++;
+            } else {
+                frameSkipCounter = 0; // 重置计数器
+                Mat frame = prepareFrame(inputFrame); // 返回已处理的帧
+
+                Mat cvMat = new Mat();  // 使用 OpenCV 的 Mat，不需要完整的包名
+                Imgproc.cvtColor(frame, cvMat, Imgproc.COLOR_RGB2BGR);  // 转换颜色空间
+                mmdeploy.Mat mat = Utils.cvMatToMat(cvMat);  // 将 OpenCV 的 Mat 转换为 MMDeploy 的 Mat
+                PoseTracker.Result[] results;
+
+                try {
+                    results = poseTracker.apply(stateHandle, mat, -1);  // 应用姿势追踪器
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                counter += 1;
+                drawFrame.add(Draw.drawPoseTrackerResult(frame, results, newWidth));  // 在帧上绘制姿势追踪结果
+
+                return drawFrame.get(counter);
+            }
+            // 如果跳过帧，直接返回上一帧的绘制结果
+            return drawFrame.get(counter);
         }
     };
 
@@ -187,4 +212,3 @@ public class CamActivity extends CameraActivity {
         }
     }
 }
-

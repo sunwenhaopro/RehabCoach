@@ -12,7 +12,8 @@
         app:layout_constraintBottom_toTopOf="@+id/videoLinearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHeight_percent="0.65">
 
         <org.opencv.android.JavaCamera2View
             android:id="@+id/javaCameraView"
@@ -32,7 +33,16 @@
         app:layout_constraintBottom_toTopOf="@+id/buttonLinearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/viewLinearLayout"/>
+        app:layout_constraintTop_toBottomOf="@+id/viewLinearLayout">
+
+        <VideoView
+            android:id="@+id/videoView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:src="@raw/test" />
+    </LinearLayout>
 
 
     <LinearLayout

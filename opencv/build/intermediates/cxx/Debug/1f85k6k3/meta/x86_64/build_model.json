@@ -25,6 +25,9 @@
     "variantName": "debug",
     "isDebuggableEnabled": true,
     "validAbiList": [
+      "ARMEABI_V7A",
+      "ARM64_V8A",
+      "X86",
       "X86_64"
     ],
     "buildTargetSet": [
@@ -125,7 +128,6 @@
         "rootBuildGradleFolder": "D:\\RehabCoach",
         "sdkFolder": "D:\\AndroidSDk",
         "isBuildOnlyTargetAbiEnabled": true,
-        "ideBuildTargetAbi": "x86_64,x86",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },

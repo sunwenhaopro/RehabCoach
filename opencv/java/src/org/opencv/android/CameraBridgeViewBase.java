@@ -444,101 +444,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
 
     protected void deliverAndDrawFrame(CvCameraViewFrame frame) {
 
-            Mat modified;
-
-            if (mListener != null) {
-                modified = mListener.onCameraFrame(frame);
-            } else {
-                modified = frame.rgba();
-            }
-
-            boolean bmpValid = true;
-            if (modified != null) {
-                try {
-                    mCacheBitmap = Bitmap.createBitmap(modified.width(), modified.height(), Bitmap.Config.ARGB_8888);
-                    Utils.matToBitmap(modified, mCacheBitmap);
-                } catch(Exception e) {
-                    Log.e(TAG, "Mat type: " + modified);
-                    Log.e(TAG, "Bitmap type: " + mCacheBitmap.getWidth() + "*" + mCacheBitmap.getHeight());
-                    Log.e(TAG, "Utils.matToBitmap() throws an exception: " + e.getMessage());
-                    bmpValid = false;
-                }
-            }
-
-//            if (bmpValid && mCacheBitmap != null) {
-//                Canvas canvas = getHolder().lockCanvas();
-//                if (canvas != null) {
-//                    canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-//                    if (BuildConfig.DEBUG) {
-//                        Log.d(TAG, "mStretch value: " + mScale);
-//                    }
-//
-//                    //TODO 额外添加，让预览框达到全屏效果
-//                    int degrees = rotationToDegree();
-//                    Matrix matrix = new Matrix();
-//                    matrix.postRotate(degrees);
-//                    Bitmap outputBitmap = Bitmap.createBitmap(mCacheBitmap, 0, 0, mCacheBitmap.getWidth(), mCacheBitmap.getHeight(), matrix, true);
-//
-//                    if (outputBitmap.getWidth() <= canvas.getWidth()) {
-//                        mScale = calcScale(outputBitmap.getWidth(), outputBitmap.getHeight(), canvas.getWidth(), canvas.getHeight());
-//                    } else {
-//                        mScale = calcScale(canvas.getWidth(), canvas.getHeight(), outputBitmap.getWidth(), outputBitmap.getHeight());
-//                    }
-//
-//                    if (mScale != 0) {
-//                        canvas.scale(mScale, mScale, 0, 0);
-//                    }
-//                    Log.d(TAG, "mStretch value: " + mScale);
-//
-//                    canvas.drawBitmap(outputBitmap, 0, 0, null);
-
-        // 替代？？不知有没改进？？？
-        // TODO: fix bug 旋转角度
-        if (bmpValid && mCacheBitmap != null) {
-            Canvas canvas = getHolder().lockCanvas();
-            if (canvas != null) {
-                canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-
-                int degrees = rotationToDegree();
-                Matrix matrix = new Matrix();
-                matrix.postRotate(degrees);
-
-                // 计算缩放比例，使图像填满整个画布
-                float scaleX = (float) canvas.getWidth() / mCacheBitmap.getWidth();
-                float scaleY = (float) canvas.getHeight() / mCacheBitmap.getHeight();
-                float scale = Math.max(scaleX, scaleY);
-
-                // 缩放绘制图像
-                matrix.postScale(scale, scale);
-                Bitmap outputBitmap = Bitmap.createBitmap(mCacheBitmap, 0, 0, mCacheBitmap.getWidth(), mCacheBitmap.getHeight(), matrix, true);
-
-                canvas.drawBitmap(outputBitmap, 0, 0, null);
-             /*
-             if (mScale != 0) {
-                 canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-                      new Rect((int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2),
-                      (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2),
-                      (int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2 + mScale*mCacheBitmap.getWidth()),
-                      (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2 + mScale*mCacheBitmap.getHeight())), null);
-             } else {
-                  canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-                      new Rect((canvas.getWidth() - mCacheBitmap.getWidth()) / 2,
-                      (canvas.getHeight() - mCacheBitmap.getHeight()) / 2,
-                      (canvas.getWidth() - mCacheBitmap.getWidth()) / 2 + mCacheBitmap.getWidth(),
-                      (canvas.getHeight() - mCacheBitmap.getHeight()) / 2 + mCacheBitmap.getHeight()), null);
-             }
-             */
-
-                    if (mFpsMeter != null) {
-                        mFpsMeter.measure();
-                        mFpsMeter.draw(canvas, 20, 30);
-                    }
-                    getHolder().unlockCanvasAndPost(canvas);
-                }
-            }
-        }
-
-       /* Mat modified;
+        Mat modified;
 
         if (mListener != null) {
             modified = mListener.onCameraFrame(frame);
@@ -549,8 +455,9 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         boolean bmpValid = true;
         if (modified != null) {
             try {
+                mCacheBitmap = Bitmap.createBitmap(modified.width(), modified.height(), Bitmap.Config.ARGB_8888);
                 Utils.matToBitmap(modified, mCacheBitmap);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 Log.e(TAG, "Mat type: " + modified);
                 Log.e(TAG, "Bitmap type: " + mCacheBitmap.getWidth() + "*" + mCacheBitmap.getHeight());
                 Log.e(TAG, "Utils.matToBitmap() throws an exception: " + e.getMessage());
@@ -562,30 +469,39 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
             Canvas canvas = getHolder().lockCanvas();
             if (canvas != null) {
                 canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-                if (BuildConfig.DEBUG)
-                    Log.d(TAG, "mStretch value: " + mScale);
 
-                if (mScale != 0) {
-                    canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-                         new Rect((int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2),
-                         (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2),
-                         (int)((canvas.getWidth() - mScale*mCacheBitmap.getWidth()) / 2 + mScale*mCacheBitmap.getWidth()),
-                         (int)((canvas.getHeight() - mScale*mCacheBitmap.getHeight()) / 2 + mScale*mCacheBitmap.getHeight())), null);
-                } else {
-                     canvas.drawBitmap(mCacheBitmap, new Rect(0,0,mCacheBitmap.getWidth(), mCacheBitmap.getHeight()),
-                         new Rect((canvas.getWidth() - mCacheBitmap.getWidth()) / 2,
-                         (canvas.getHeight() - mCacheBitmap.getHeight()) / 2,
-                         (canvas.getWidth() - mCacheBitmap.getWidth()) / 2 + mCacheBitmap.getWidth(),
-                         (canvas.getHeight() - mCacheBitmap.getHeight()) / 2 + mCacheBitmap.getHeight()), null);
-                }
+                int canvasWidth = canvas.getWidth();
+                int canvasHeight = canvas.getHeight();
+                int bitmapWidth = mCacheBitmap.getWidth();
+                int bitmapHeight = mCacheBitmap.getHeight();
+
+                // 计算缩放比例，使图像填满整个画布
+                float scaleX = (float) canvasWidth / bitmapWidth;
+                float scaleY = (float) canvasHeight / bitmapHeight;
+                float scale = Math.max(scaleX, scaleY);
+
+                Matrix matrix = new Matrix();
+                matrix.setScale(scale, scale);
+
+                Bitmap outputBitmap = Bitmap.createBitmap(
+                        mCacheBitmap, 0, 0, bitmapWidth, bitmapHeight, matrix, true
+                );
+
+                // 计算绘制位置，使图像居中显示
+                int xOffset = (canvasWidth - outputBitmap.getWidth()) / 2;
+                int yOffset = (canvasHeight - outputBitmap.getHeight()) / 2;
+
+                canvas.drawBitmap(outputBitmap, xOffset, yOffset, null);
 
                 if (mFpsMeter != null) {
                     mFpsMeter.measure();
                     mFpsMeter.draw(canvas, 20, 30);
                 }
+
                 getHolder().unlockCanvasAndPost(canvas);
             }
-        }*/
+        }
+    }
 
 
     /**

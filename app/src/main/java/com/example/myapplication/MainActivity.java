@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                     if (frame.empty()) {
                         return;
                     }
-                    Imgproc.resize(frame, frame, new org.opencv.core.Size(600, 800));  // 调整帧大小
+                    Imgproc.resize(frame, frame, new org.opencv.core.Size(300, 400));  // 调整帧大小
                     Mat cvMat = new Mat();
                     Imgproc.cvtColor(frame, cvMat, Imgproc.COLOR_RGB2BGR);
                     mmdeploy.Mat mat = Utils.cvMatToMat(cvMat);
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                         throw new RuntimeException(e);
                     }
                     // TODO: fix bug
-                    Mat clonedFrame = Draw.drawPoseTrackerResult(frame, results, 600);
+                    Mat clonedFrame = Draw.drawPoseTrackerResult(frame, results, 300);
                     Bitmap bitmap = Bitmap.createBitmap(clonedFrame.width(), clonedFrame.height(), Bitmap.Config.ARGB_8888);
                     org.opencv.android.Utils.matToBitmap(clonedFrame, bitmap);
                     videoFrameView.setImageBitmap(bitmap);
