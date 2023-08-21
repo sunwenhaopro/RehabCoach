@@ -37,7 +37,7 @@ public class CamActivity extends CameraActivity {
     private int cameraId = JavaCamera2View.CAMERA_ID_ANY;  // 相机ID
     private VideoView videoView;        // 视频视图
     private MediaController mediaController;  // 媒体控制器
-    public static int newWidth = 500;          // 新的宽度
+    public static int newWidth = 500;          // 新的宽度 ----> 4:3
     public static int newHeight = 375;         // 新的高度
     private int frameSkipCounter = 0;
     private final int FRAME_SKIP_INTERVAL = 2; // 隔n帧处理一次
@@ -70,7 +70,7 @@ public class CamActivity extends CameraActivity {
             return frame;
         }
 
-        // TODO
+        // TODO: 可能还可以提升效果
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             if(counter >= 100000){
