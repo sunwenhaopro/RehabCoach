@@ -40,7 +40,7 @@ public class CamActivity extends CameraActivity {
     public static int newWidth = 500;          // 新的宽度 ----> 4:3
     public static int newHeight = 375;         // 新的高度
     private int frameSkipCounter = 0;
-    private final int FRAME_SKIP_INTERVAL = 2; // 隔n帧处理一次
+    private final int FRAME_SKIP_INTERVAL = 1; // 隔n帧处理一次
     private ArrayList<Mat> drawFrame = new ArrayList<>();  // 存储处理后的帧
     private int counter = -1;
 
@@ -73,7 +73,7 @@ public class CamActivity extends CameraActivity {
         // TODO: 可能还可以提升效果
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-            if(counter >= 100000){
+            if (counter >= 100000) {
                 drawFrame.clear();
                 counter = -1;
             }
@@ -102,6 +102,34 @@ public class CamActivity extends CameraActivity {
             return drawFrame.get(counter);
         }
     };
+
+//        // 直接跳过，不处理
+//        @Override
+//        public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+//            if (frameSkipCounter < FRAME_SKIP_INTERVAL && counter != -1) {
+//                frameSkipCounter++;
+//                return prepareFrame(inputFrame);
+//            } else {
+//                frameSkipCounter = 0; // 重置计数器
+//                Mat frame = prepareFrame(inputFrame); // 返回已处理的帧
+//
+//                Mat cvMat = new Mat();  // 使用 OpenCV 的 Mat，不需要完整的包名
+//                Imgproc.cvtColor(frame, cvMat, Imgproc.COLOR_RGB2BGR);  // 转换颜色空间
+//                mmdeploy.Mat mat = Utils.cvMatToMat(cvMat);  // 将 OpenCV 的 Mat 转换为 MMDeploy 的 Mat
+//                PoseTracker.Result[] results;
+//
+//                try {
+//                    results = poseTracker.apply(stateHandle, mat, -1);  // 应用姿势追踪器
+//                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+//                }
+//                counter += 1;
+//                drawFrame.add(Draw.drawPoseTrackerResult(frame, results, newWidth));  // 在帧上绘制姿势追踪结果
+//
+//                return drawFrame.get(counter);
+//            }
+//        }
+//    };
 
     private BaseLoaderCallback baseLoaderCallback = new BaseLoaderCallback(this) {
         @Override
