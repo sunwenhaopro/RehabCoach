@@ -1,0 +1,17 @@
+-- Merging decision tree log ---
+manifest
+ADDED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml:2:1-4:12
+INJECTED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml:2:1-4:12
+	package
+		ADDED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml:3:7-27
+		INJECTED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml
+	xmlns:android
+		ADDED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml:2:11-69
+uses-sdk
+INJECTED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml
+INJECTED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from E:\STITP1\RehabCoach\opencv\java\AndroidManifest.xml
