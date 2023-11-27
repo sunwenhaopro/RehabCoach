@@ -90,7 +90,6 @@
 
 apply plugin: 'com.android.library'
 
-
 def openCVersionName = "4.8.0"
 def openCVersionCode = ((4 * 100 + 8) * 100 + 0) * 10 + 0
 
@@ -98,11 +97,12 @@ println "OpenCV: " +openCVersionName + " " + project.buildscript.sourceFile
 
 android {
     
-    compileSdkVersion 32
+    compileSdkVersion 33
+    namespace 'org.opencv'
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 32
+        minSdkVersion 30
+        targetSdkVersion 33
 
         versionCode openCVersionCode
         versionName openCVersionName
@@ -112,6 +112,10 @@ android {
                 arguments "-DANDROID_STL=c++_shared"
                 targets "opencv_jni_shared"
             }
+        }
+
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
     }
 
@@ -152,6 +156,12 @@ android {
             path (project.projectDir.toString() + '/libcxx_helper/CMakeLists.txt')
         }
     }
+
+    buildFeatures {
+        aidl = true
+        buildConfig = true
+    }
+
 }
 
 dependencies {

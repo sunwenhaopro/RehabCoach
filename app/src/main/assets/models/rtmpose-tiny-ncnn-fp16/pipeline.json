@@ -89,7 +89,7 @@
                     "img": "input"
                 },
                 "output_map": {},
-                "use_vulkan": false
+                "use_vulkan": true
             },
             {
                 "type": "Task",

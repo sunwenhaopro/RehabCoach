@@ -32,8 +32,8 @@
     },
     "backend_config": {
         "type": "ncnn",
-        "precision": "FP16",
-        "use_vulkan": false
+        "precision": "INT8",
+        "use_vulkan": true
     },
     "calib_config": {}
 }

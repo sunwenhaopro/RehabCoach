@@ -2,9 +2,6 @@ package org.opencv.android;
 
 import java.util.List;
 
-import android.graphics.Matrix;
-import android.view.Surface;
-import android.view.WindowManager;
 import org.opencv.BuildConfig;
 import org.opencv.R;
 import org.opencv.core.Mat;
@@ -17,12 +14,12 @@ import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 
 /**
  * This is a basic class, implementing the interaction with Camera and OpenCV library.
@@ -377,9 +374,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
     private void onEnterStartedState() {
         Log.d(TAG, "call onEnterStartedState");
         /* Connect camera */
-        // TODO
-        // 修改了源码  if (!connectCamera(getWidth(), getHeight()))
-        if (!connectCamera(getWidth(), getHeight())){
+        if (!connectCamera(getWidth(), getHeight())) {
             AlertDialog ad = new AlertDialog.Builder(getContext()).create();
             ad.setCancelable(false); // This blocks the 'BACK' button
             ad.setMessage("It seems that your device does not support camera (or it is locked). Application will be closed.");
@@ -407,43 +402,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
      * then displayed on the screen.
      * @param frame - the current frame to be delivered
      */
-    private int rotationToDegree() {
-        WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        int rotation = windowManager.getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch(rotation) {
-            case Surface.ROTATION_0:
-                if(mCameraIndex == CAMERA_ID_FRONT) {
-                    degrees = -90;
-                } else {
-                    degrees = 90;
-                }
-                break;
-            case Surface.ROTATION_90:
-                break;
-            case Surface.ROTATION_180:
-                break;
-            case Surface.ROTATION_270:
-                if(mCameraIndex == CAMERA_ID_ANY || mCameraIndex == CAMERA_ID_BACK) {
-                    degrees = 180;
-                }
-                break;
-        }
-        return degrees;
-    }
-    /**
-     * 计算得到屏幕宽高比
-     */
-    private float calcScale(int widthSource, int heightSource, int widthTarget, int heightTarget) {
-        if(widthTarget <= heightTarget) {
-            return (float) heightTarget / (float) heightSource;
-        } else {
-            return (float) widthTarget / (float) widthSource;
-        }
-    }
-
     protected void deliverAndDrawFrame(CvCameraViewFrame frame) {
-
         Mat modified;
 
         if (mListener != null) {
@@ -502,7 +461,6 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
             }
         }
     }
-
 
     /**
      * This method is invoked shall perform concrete operation to initialize the camera.
